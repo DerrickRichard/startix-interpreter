@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startix Translator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Space+Mono&display=swap');
+
+        :root {
+            --bg: #030712;
+            --glass: rgba(17, 24, 39, 0.7);
+            --accent: #2dd4bf; 
+            --accent-glow: rgba(45, 212, 191, 0.4);
+            --text: #f9fafb;
+            --muted: #9ca3af;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: radial-gradient(circle at top right, #134e4a, #030712 40%), 
+                        radial-gradient(circle at bottom left, #1e1b4b, #030712 40%);
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 650px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+            background: rgba(0,0,0,0.2);
+            padding: 6px;
+            border-radius: 14px;
+        }
+
+        .tab {
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            padding: 16px;
+            font-family: 'Space Mono', monospace;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: border 0.3s;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea { height: 140px; resize: none; }
+        
+        input#anchorInput {
+            width: 80px;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--accent);
+            border-width: 2px;
+        }
+
+        .drift-display {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 8px;
+            display: block;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .controls {
+            margin: 24px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 2;
+            background-color: var(--accent);
+            color: #000;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        button.secondary {
+            flex: 1;
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 212, 191, 0.3);
+        }
+
+        button.secondary:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .output-box {
+            margin-top: 10px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            min-height: 60px;
+            white-space: pre-wrap;
+            font-family: 'Space Mono', monospace;
+            border: 1px solid var(--border);
+            color: var(--accent);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .hidden { display: none; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>STARTIX ENGINE</h2>
+    
+    <div class="tabs">
+        <div class="tab active" id="decodeTab" onclick="setMode('decode')">DECODE CYCLE</div>
+        <div class="tab" id="encodeTab" onclick="setMode('encode')">ENCODE CYCLE</div>
+    </div>
+
+    <!-- ENCODE SECTION -->
+    <div id="encodeFields" class="hidden">
+        <div class="field-group">
+            <label>CHOOSE ANCHOR (The letter that represents 'A')</label>
+            <input type="text" id="anchorInput" maxlength="1" value="W" oninput="updateDrift()">
+            <span class="drift-display" id="driftInfo">Current Drift: 22</span>
+        </div>
+        <div class="field-group">
+            <label>PLAIN TEXT TO CONVERT</label>
+            <textarea id="plainText" placeholder="Type normal message..."></textarea>
+        </div>
+    </div>
+
+    <!-- DECODE SECTION -->
+    <div id="decodeFields">
+        <div class="field-group">
+            <label>STARTIX CODE (Format: Anchor:// Message)</label>
+            <textarea id="cipherText" placeholder="W:// E sawp pk..."></textarea>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="actionBtn" onclick="runShiftCycle()">Run Shift Cycle</button>
+        <button class="secondary" onclick="clearAll()">Reset</button>
+    </div>
+
+    <label id="outputLabel">TRANSLATED MESSAGE:</label>
+    <div id="output" class="output-box">Awaiting input...</div>
+</div>
+
+<script>
+    let currentMode = 'decode';
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('decodeTab').classList.toggle('active', mode === 'decode');
+        document.getElementById('encodeTab').classList.toggle('active', mode === 'encode');
+        document.getElementById('decodeFields').classList.toggle('hidden', mode === 'encode');
+        document.getElementById('encodeFields').classList.toggle('hidden', mode === 'decode');
+        document.getElementById('outputLabel').innerText = mode === 'encode' ? 'ENCODED STARTIX:' : 'TRANSLATED MESSAGE:';
+        clearAll();
+    }
+
+    function updateDrift() {
+        const anchor = document.getElementById('anchorInput').value.toUpperCase();
+        if (anchor.match(/[A-Z]/)) {
+            const drift = anchor.charCodeAt(0) - 'A'.charCodeAt(0);
+            document.getElementById('driftInfo').innerText = `Current Drift: ${drift}`;
+        }
+    }
+
+    function runShiftCycle() {
+        const outputDiv = document.getElementById('output');
+        outputDiv.style.color = "var(--accent)";
+
+        if (currentMode === 'decode') {
+            const input = document.getElementById('cipherText').value.trim();
+            const match = input.match(/^([a-zA-Z]):\/\/\s*(.*)/s);
+
+            if (!match) {
+                outputDiv.innerText = "Error: Invalid Format. Use 'Anchor:// text'.";
+                outputDiv.style.color = "#f87171";
+                return;
+            }
+
+            const anchorChar = match[1].toUpperCase();
+            const text = match[2];
+            const drift = anchorChar.charCodeAt(0) - 'A'.charCodeAt(0);
+            
+            outputDiv.innerText = processCiph(text, -drift);
+        } else {
+            const anchorChar = document.getElementById('anchorInput').value.toUpperCase();
+            const text = document.getElementById('plainText').value;
+
+            if (!anchorChar.match(/[A-Z]/)) {
+                outputDiv.innerText = "Error: Please select a valid letter Anchor.";
+                return;
+            }
+
+            const drift = anchorChar.charCodeAt(0) - 'A'.charCodeAt(0);
+            const encoded = processCiph(text, drift);
+            outputDiv.innerText = `${anchorChar}:// ${encoded}`;
+        }
+    }
+
+    function processCiph(text, shift) {
+        return text.split('').map(char => {
+            if (char.match(/[a-z]/i)) {
+                const code = char.charCodeAt(0);
+                const isUpper = code >= 65 && code <= 90;
+                const base = isUpper ? 65 : 97;
+                
+                let moved = (code - base + shift) % 26;
+                if (moved < 0) moved += 26;
+                
+                return String.fromCharCode(moved + base);
+            }
+            return char;
+        }).join('');
+    }
+
+    function clearAll() {
+        document.getElementById('cipherText').value = "";
+        document.getElementById('plainText').value = "";
+        document.getElementById('output').innerText = "Awaiting input...";
+        document.getElementById('output').style.color = "var(--accent)";
+    }
+</script>
+
+</body>
+</html>
