@@ -123,7 +123,12 @@
             border-color: var(--accent);
         }
 
-        textarea { height: 140px; resize: none; }
+        /* Enabled vertical resizing for multiline support */
+        textarea { 
+            height: 160px; 
+            resize: vertical; 
+            min-height: 100px;
+        }
         
         input#anchorInput {
             width: 80px;
@@ -184,8 +189,11 @@
             padding: 20px;
             background: rgba(0, 0, 0, 0.4);
             border-radius: 12px;
-            min-height: 60px;
-            white-space: pre-wrap;
+            min-height: 80px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Preserves multiline layout */
+            word-wrap: break-word;
             font-family: 'Space Mono', monospace;
             border: 1px solid var(--border);
             color: var(--accent);
@@ -196,9 +204,10 @@
         .hidden { display: none; }
 
         /* Scrollbar styling */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
     </style>
 </head>
 <body>
@@ -220,7 +229,7 @@
         </div>
         <div class="field-group">
             <label>PLAIN TEXT TO CONVERT</label>
-            <textarea id="plainText" placeholder="Type normal message..."></textarea>
+            <textarea id="plainText" placeholder="Type normal message here...&#10;Line breaks are supported."></textarea>
         </div>
     </div>
 
@@ -228,7 +237,7 @@
     <div id="decodeFields">
         <div class="field-group">
             <label>STARTIX CODE (Format: Anchor:// Message)</label>
-            <textarea id="cipherText" placeholder="W:// E sawp pk..."></textarea>
+            <textarea id="cipherText" placeholder="W:// Ydeygaj Jqccap dada..."></textarea>
         </div>
     </div>
 
@@ -267,7 +276,8 @@
         outputDiv.style.color = "var(--accent)";
 
         if (currentMode === 'decode') {
-            const input = document.getElementById('cipherText').value.trim();
+            const input = document.getElementById('cipherText').value; // Removed trim to protect specific multiline spacing
+            // The 's' flag allows the dot to match newline characters
             const match = input.match(/^([a-zA-Z]):\/\/\s*(.*)/s);
 
             if (!match) {
@@ -308,7 +318,7 @@
                 
                 return String.fromCharCode(moved + base);
             }
-            return char;
+            return char; // Line breaks and symbols are returned as-is
         }).join('');
     }
 
